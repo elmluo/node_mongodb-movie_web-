@@ -1,0 +1,20 @@
+{
+  "name": "node_mongodb-movie_web-",
+  "description": "express+mongodb build a app",
+  "main": "index.js",
+  "authors": [
+    "Luochao"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/qinqinluochao/node_mongodb-movie_web-",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.3.7"
+  }
+}
