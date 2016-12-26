@@ -13,7 +13,7 @@ mongoose.Promise = global.Promise;
 mongoose.connect("mongodb://localhost:27017/movies"); // 连接我们数据库
 
 app.use(require('body-parser').urlencoded({extended: true}));
-app.use(express.static(path.join(__dirname, 'bower_components')));//静态文件配置的目录
+app.use(express.static(path.join(__dirname, 'public')));//静态文件配置的目录
 app.set('views','./views/pages');
 app.set('view engine','pug');
 app.locals.moment = require('moment'); // 对于一个事件格式的方法
