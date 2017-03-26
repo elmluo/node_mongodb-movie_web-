@@ -135,7 +135,9 @@
     "wordwrap": "^0.0.3",
     "yargs": "^3.10.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "bcryptjs": "^2.4.3"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

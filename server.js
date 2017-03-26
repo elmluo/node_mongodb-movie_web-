@@ -1,18 +1,22 @@
 /**
- * Created by Administrator on 2016/9/12.
+ * Created by Administrator on
  */
 var express = require("express");
 var path = require('path');
 var mongoose = require('mongoose'); // 引入mongoose模块
 var _ = require('underscore'); // underscore模块用来新字段替换久字段。
-var Movie = require('./models/movie'); // 引入刚才编译好schema模式的模型
+
+/* 数据模型 */
+var User = require('./models/user.js')
+var Movie = require('./models/movie.js'); // 引入刚才编译好schema模式的模型
+
 var port = process.env.PORT || 3000; // 设置端口
 var app = express();
 
 mongoose.Promise = global.Promise;
 mongoose.connect("mongodb://localhost:27017/lcmovies"); // 连接我们数据库，数据库的名字lcMovies
 
-app.use(require('body-parser').urlencoded({extended: true}));
+app.use(require('body-parser').urlencoded({extended: true})); // 插件，将formpost过来body体转换成一个对象
 app.use(express.static(path.join(__dirname, 'public')));// 静态文件配置的目录
 app.set('views', './views/pages'); // 找到对应需要返回给前段的页面
 app.set('view engine', 'pug'); // 设置模板引擎
@@ -21,7 +25,7 @@ app.listen(port);
 
 console.log('imooc start:' + port);
 
-//index page 首页
+//index page 首页路由
 app.get('/', function (req, res) {
     Movie.fetch(function (err, movies) {  // fectch方法拿到对应数据库的movies数据 传入回调方法。
         if (err) {
@@ -32,6 +36,21 @@ app.get('/', function (req, res) {
             title: 'imooc 首页',
             movies: movies
         });
+    })
+});
+
+// signup form注册提交册路由
+app.post('/user/signup', function (req, res) {
+    // req.params('userId') express内部实现body query 路由三种方式的封装。
+    // 路由："/user/signup:userId" -> req.params.userId
+    // ajax： post({userId:1113})里面的body体里面的 -> req.body.userId
+    // query："/user/signup/1111?userId=1112 -> req.query.userid
+    // req.params('userId') express实现是有顺序的，路由->ajax 的body体->query串。
+    var _user = req.body.user;
+    var user = new User(_user);
+    user.save(function (err, user) {
+        if (err) console.log(err);
+        console.log(user);
     })
 });
 
@@ -51,7 +70,7 @@ app.get('/movie/:id', function (req, res) {
     })
 });
 
-//admin page 后台录入页
+//admin page 后台录入页路由
 app.get('/admin/addMovie', function (req, res) {
     res.render('admin', {
         title: 'node 后台录入页',
@@ -68,7 +87,8 @@ app.get('/admin/addMovie', function (req, res) {
     })
 });
 
-//admin update movie 更新的时候。需要将更新的列表,也初始化到台录入页表单中。
+//admin update movie 后台录入页面form中‘更新link 的路由’
+// 更新的时候。需要将更新的列表,也初始化到台录入页form中。
 app.get('/admin/update/:id', function (req, res) {
     var id = req.params.id;
 
@@ -84,7 +104,8 @@ app.get('/admin/update/:id', function (req, res) {
     }
 });
 
-//admin post movie 拿到从录入页面表单post action过来的数据
+//admin post movie 录入页面form提交路由。
+// 拿到从录入页面formpost action过来的数据
 app.post('/admin/movie/new', function (req, res) {
     var id = req.body.movie._id; // post请求体里面时候有id的定义
     var movieObj = req.body.movie; // 在请求体里面拿到这个这个movie对象
@@ -128,7 +149,7 @@ app.post('/admin/movie/new', function (req, res) {
 });
 
 
-//list page
+//list page 电影列表路由。
 app.get('/admin/list', function (req, res) {
     Movie.fetch(function (err, movies) { // 调用查询方法
         if (err) {
@@ -141,7 +162,8 @@ app.get('/admin/list', function (req, res) {
         });
     });
 });
-// list delete movie
+
+// list delete movie 列表页过来的删除的请求。
 app.delete('/admin/list', function (req, res) {
     var id = req.query.id;
     if (id) {
