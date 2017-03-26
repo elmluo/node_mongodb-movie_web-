@@ -47,10 +47,34 @@ app.post('/user/signup', function (req, res) {
     // query："/user/signup/1111?userId=1112 -> req.query.userid
     // req.params('userId') express实现是有顺序的，路由->ajax 的body体->query串。
     var _user = req.body.user;
-    var user = new User(_user);
-    user.save(function (err, user) {
+
+
+    // 判断时候有重复用户名么若有重，返回到首页，没有再保存
+    User.find({name: _user.name}, function (err, user) {
         if (err) console.log(err);
-        console.log(user);
+        if (user) {
+            res.redirect('/');
+        } else {
+            var user = new User(_user);
+            user.save(function (err, user) {
+                if (err) console.log(err);
+                console.log(user);
+                // 数据存储完之后，重定向路由到用于列表页。
+                res.redirect('/admin/userlist');
+            })
+        }
+    });
+
+});
+
+// userlist page 用户信息页列表
+app.get('/admin/userlist', function (req, res) {
+    User.fetch(function (err, users) {
+        if (err) console.log(err);
+        res.render('userlist', {
+            title: '用户列表',
+            users: users
+        });
     })
 });
 
