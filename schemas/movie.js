@@ -36,16 +36,16 @@ MovieSchema.pre('save',function(next){ //
 
 // 创建数据库查询静态方法，这些静态方法不会直接和数据库进行交互，只有通过model模型编译才会具有这个方法
 MovieSchema.statics = {
-    fetch: function (cb) { // 封装一个查询数据库所有数据的一个方法
+    fetch: function (callback) { // 封装一个查询数据库所有数据的一个方法
         return this
             .find({}) // 查询所有
             .sort('meta.updateAt') // 按照更新时间排序
-            .exec(cb); // 然后再执行一个回调方法
+            .exec(callback); // 执行回调
     },
-    findById: function (id, cb) {  // 封装一个根据id来查询单条数据的方法。
+    findById: function (id, callback) {  // 封装一个根据id来查询单条数据的方法。
         return this
             .findOne({_id: id})
-            .exec(cb);
+            .exec(callback); // 执行回调
     }
 };
 
