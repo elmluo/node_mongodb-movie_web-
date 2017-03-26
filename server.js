@@ -7,7 +7,7 @@ var mongoose = require('mongoose'); // 引入mongoose模块
 var _ = require('underscore'); // underscore模块用来新字段替换久字段。
 
 /* 数据模型 */
-var User = require('./models/user.js')
+var User = require('./models/user.js');
 var Movie = require('./models/movie.js'); // 引入刚才编译好schema模式的模型
 
 var port = process.env.PORT || 3000; // 设置端口
@@ -39,7 +39,7 @@ app.get('/', function (req, res) {
     })
 });
 
-// signup form注册提交册路由
+// signup form注册 路由
 app.post('/user/signup', function (req, res) {
     // req.params('userId') express内部实现body query 路由三种方式的封装。
     // 路由："/user/signup:userId" -> req.params.userId
@@ -47,24 +47,51 @@ app.post('/user/signup', function (req, res) {
     // query："/user/signup/1111?userId=1112 -> req.query.userid
     // req.params('userId') express实现是有顺序的，路由->ajax 的body体->query串。
     var _user = req.body.user;
-
-
     // 判断时候有重复用户名么若有重，返回到首页，没有再保存
     User.find({name: _user.name}, function (err, user) {
         if (err) console.log(err);
         if (user) {
-            res.redirect('/');
+            console.log('用户已经注册');
+            return res.redirect('/');
         } else {
             var user = new User(_user);
+            console.log(user);
             user.save(function (err, user) {
                 if (err) console.log(err);
                 console.log(user);
                 // 数据存储完之后，重定向路由到用于列表页。
+                console.log('注册成功');
                 res.redirect('/admin/userlist');
             })
         }
     });
 
+});
+
+// signin form 登录 路由
+app.post('/user/signin', function (req, res) {
+    var _user = req.body.user;
+    var name = _user.name;
+    var password = _user.password;
+    // 直接调用mongoose的findOne方法匹配用户。
+    User.findOne({name: name}, function (err, user) {
+        if (err) console.log(err);
+        console.log(user);
+        if (!user) {
+            console.log("用户不存在，请注册！");
+            return res.redirect('/')
+        }
+        // schema中定义实例的方法 密码匹配
+        user.comparePassword(password, function (err, isMatch) {
+            if (err) console.log(err);
+            if (isMatch) {
+                console.log("密码匹配成功, 用户已登录");
+                res.redirect('/')
+            } else {
+                console.log("密码没有匹配")
+            }
+        })
+    });
 });
 
 // userlist page 用户信息页列表
