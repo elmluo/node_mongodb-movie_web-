@@ -41,16 +41,15 @@ app.get('/', function (req, res) {
 
 // signup form注册 路由
 app.post('/user/signup', function (req, res) {
-    // req.params('userId') express内部实现body query 路由三种方式的封装。
-    // 路由："/user/signup:userId" -> req.params.userId
-    // ajax： post({userId:1113})里面的body体里面的 -> req.body.userId
-    // query："/user/signup/1111?userId=1112 -> req.query.userid
-    // req.params('userId') express实现是有顺序的，路由->ajax 的body体->query串。
     var _user = req.body.user;
+    var name = _user.name;
+    console.log(_user);
     // 判断时候有重复用户名么若有重，返回到首页，没有再保存
-    User.find({name: _user.name}, function (err, user) {
-        if (err) console.log(err);
-        if (user) {
+    User.find({name: name}, function (err, user) {
+        console.log(user);
+        if (err) return console.log(err);
+        // 返回空数组，if也是true
+        if (user.length !== 0) {
             console.log('用户已经注册');
             return res.redirect('/');
         } else {
@@ -62,7 +61,7 @@ app.post('/user/signup', function (req, res) {
                 // 数据存储完之后，重定向路由到用于列表页。
                 console.log('注册成功');
                 res.redirect('/admin/userlist');
-            })
+            });
         }
     });
 
@@ -76,19 +75,20 @@ app.post('/user/signin', function (req, res) {
     // 直接调用mongoose的findOne方法匹配用户。
     User.findOne({name: name}, function (err, user) {
         if (err) console.log(err);
-        console.log(user);
+        // console.log(user);
         if (!user) {
             console.log("用户不存在，请注册！");
-            return res.redirect('/')
+            return res.redirect('/');
         }
-        // schema中定义实例的方法 密码匹配
-        user.comparePassword(password, function (err, isMatch) {
-            if (err) console.log(err);
+        // schema中定义实例的methods对象的方法 密码匹配
+        user.comparePasswordByBcrypt(password, function (err,isMatch) {
+            // console.log(isMatch);
+            // if (err) console.log(err);
             if (isMatch) {
                 console.log("密码匹配成功, 用户已登录");
                 res.redirect('/')
             } else {
-                console.log("密码没有匹配")
+                console.log("密码没有匹配");
             }
         })
     });

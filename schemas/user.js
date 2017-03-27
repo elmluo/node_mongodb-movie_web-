@@ -35,25 +35,45 @@ userSchema.pre('save', function (next) {
     }
 
     // 加盐hash用户密码
-    // bcrypt.genSalt(saltRounds, function(err, salt) {
-    //     var user = this;
-    //     if(err) return next(err);
-    //     bcrypt.hash(user.password, salt, function(err, hash) {
-    //         // Store hash in your password DB.
-    //         if (err) return next(err);
-    //         user.password = hash;
-    //         next();
-    //     });
-    // });
-    next();
-});
+    // this 是个坑
+    var user = this;
 
+    console.log(user);
+    bcrypt.genSalt(saltRounds, function (err, salt) {
+        console.log(user.password);
+        if (err) return next(err);
+        bcrypt.hash(user.password, salt, function (err, hash) {
+            // Store hash in your password DB.
+            if (err) return next(err);
+            user.password = hash;
+            next();
+        });
+    });
+    // next();
+});
+// 定义实例的方法
+userSchema.methods = {
+    comparePasswordByBcrypt: function (_password, callback) {
+        var hashedPassword = this.password;
+        bcrypt.compare(_password, hashedPassword, function (err, isMatch) {
+            if (err) return callback(err);
+            callback && callback(null, isMatch);
+        })
+    },
+    comparePassword: function (_password, callback) {
+        var isMatch = true;
+        if (_password !== this.password) {
+            return console.log("后台没有匹配到数据库中用户密码");
+        } else {
+            callback(isMatch);
+        }
+    }
+};
+
+// 定义模式的静态方法
 userSchema.statics = {
     fetch: function (callback) {
         return this.find({}).sort('meta.updateAt').exec(callback)
-    },
-    findOne: function (name, callback) {
-        return this.findOne({name:name}).exec(callback)
     }
 };
 
