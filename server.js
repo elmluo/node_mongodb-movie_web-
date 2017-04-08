@@ -18,6 +18,15 @@ mongoose.connect("mongodb://localhost:27017/lcmovies"); // 连接我们数据库
 
 app.use(require('body-parser').urlencoded({extended: true})); // 插件，将formpost过来body体转换成一个对象
 app.use(express.static(path.join(__dirname, 'public')));// 静态文件配置的目录
+// var cookieParser = require('cookie-parser');
+var cookieSession = require('cookie-session');
+// app.use(cookieParser());
+app.use(cookieSession({
+    keys: 'secret1',
+    resave:false,
+    saveUninitialized:true
+})); // 让session才能正常运作,已从express分离出来成为一个单独模块。
+
 app.set('views', './views/pages'); // 找到对应需要返回给前段的页面
 app.set('view engine', 'pug'); // 设置模板引擎
 app.locals.moment = require('moment'); // 对于一个时间格式的方法
@@ -27,6 +36,8 @@ console.log('imooc start:' + port);
 
 //index page 首页路由
 app.get('/', function (req, res) {
+    console.log('user in session');
+    console.log(req.session);
     Movie.fetch(function (err, movies) {  // fectch方法拿到对应数据库的movies数据 传入回调方法。
         if (err) {
             console.log(err);
@@ -85,8 +96,11 @@ app.post('/user/signin', function (req, res) {
             // console.log(isMatch);
             // if (err) console.log(err);
             if (isMatch) {
-                console.log("密码匹配成功, 用户已登录");
-                res.redirect('/')
+                console.log(user);
+                req.session.user = user; // 用户登录之后将用户的信息存入会话session当中
+                console.log(req.session.user);
+                // console.log("密码匹配成功, 用户已登录");
+                res.redirect('/'); // 跳转到首页
             } else {
                 console.log("密码没有匹配");
             }
